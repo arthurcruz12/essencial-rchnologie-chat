@@ -1,0 +1,42 @@
+name: Run Backtest (B3 vs CDI)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'backtest.py'
+      - '.github/workflows/run.yml'
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pandas numpy matplotlib requests
+
+      - name: Run backtest (B3 vs CDI)
+        run: |
+          python backtest.py \
+            --tickers PETR4.SA,VALE3.SA,ITUB4.SA,BBDC4.SA \
+            --start 2019-01-01 \
+            --end 2020-12-31 \
+            --horizon 20 \
+            --excess-ann 0.05 \
+            --risk-profile moderado \
+            --max-positions 5 \
+            --cdi-annual 0.12
+
+      - name: Upload outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: outputs
+          path: outputs/**
